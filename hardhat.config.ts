@@ -80,6 +80,7 @@ const config: HardhatUserConfig = {
 
 // Setup "testnet" network
 if (process.env.NETWORK_TESTNET_URL !== undefined) {
+  console.debug("Setting up testnet network");
   config.networks!.testnet = {
     url: process.env.NETWORK_TESTNET_URL,
     accounts: [process.env.NETWORK_TESTNET_PRIVATE_KEY!],

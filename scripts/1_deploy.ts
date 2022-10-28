@@ -1,7 +1,6 @@
 import { ethers } from "hardhat";
 import CollectionConfig from "../config/CollectionConfig";
 import { NftContractType } from "../lib/NftContractProvider";
-import ContractArguments from "../config/ContractArguments";
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -14,18 +13,15 @@ async function main() {
   console.log("Deploying contract...");
 
   // We get the contract to deploy
-  const Contract = await ethers.getContractFactory(
-    CollectionConfig.contractName
-  );
-  const contract = (await Contract.deploy(
-    ...ContractArguments
-  )) as NftContractType;
+  const Contract = await ethers.getContractFactory("AkromaDIDRegistry");
+  const contract = (await Contract.deploy()) as NftContractType;
 
   await contract.deployed();
 
-  console.debug(`Contract config: ${JSON.stringify(CollectionConfig)}`);
+  // console.debug(`Contract config: ${JSON.stringify(CollectionConfig)}`);
 
   console.log("Contract deployed to:", contract.address);
+  
 }
 
 // We recommend this pattern to be able to use async/await everywhere
