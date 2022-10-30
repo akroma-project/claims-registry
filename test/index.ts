@@ -11,23 +11,28 @@ describe("Akroma Claims Registry", function () {
   let owner!: SignerWithAddress;
   let user!: SignerWithAddress;
   let server!: SignerWithAddress;
-  let externalUser!: SignerWithAddress;
   let contract!: AkromaClaimsRegistry;
   let noAddress = "0x0000000000000000000000000000000000000000000000000000000000000000";
   let testKey = "username";
   let testValue = "detroitpro";
 
   before(async function () {
-    [owner, user, server, externalUser] = await ethers.getSigners();
+    [owner, user, server] = await ethers.getSigners();
   });
 
   describe("deployment", async () => {
 
     it("should deploy without exceptions", async () => {
       const Contract = await ethers.getContractFactory("AkromaClaimsRegistry");
-      contract = (await Contract.deploy()) as AkromaClaimsRegistry;
+      contract = (await Contract.deploy('unit-test', 'url', 2.0)) as AkromaClaimsRegistry;
 
       await contract.deployed();
+
+      expect(contract.address).to.be.properAddress;
+
+      expect(await contract.name()).to.equal('unit-test');
+      expect(await contract.url()).to.equal('url');
+      expect(await contract.cost()).to.equal(2.0);
     })
 
   });
@@ -46,7 +51,8 @@ describe("Akroma Claims Registry", function () {
       const subject = user.address;
       const key = ethers.utils.formatBytes32String(testKey);
       const value = ethers.utils.formatBytes32String(testValue);
-      await contract.setClaim(subject, key, value);
+
+      await contract.connect(owner).setClaim(subject, key, value, { value: 2 });
     });
 
     it("should be able to look up values based on issuer, subject and key", async function () {
@@ -62,6 +68,20 @@ describe("Akroma Claims Registry", function () {
       // decode the claim
       const decoded = ethers.utils.parseBytes32String(claim);
       expect(decoded).to.equal(testValue);
+    });
+
+  });
+
+  describe("when someone tries to use registry with invalid params", async () => {
+
+    it("should now allow any user to store a claim without paying AKA", async function () {
+      const subject = user.address;
+      const key = ethers.utils.formatBytes32String(testKey);
+      const value = ethers.utils.formatBytes32String(testValue);
+
+      await expect(
+        contract.connect(owner).setClaim(subject, key, value, { value: 1 })
+      ).to.be.revertedWith("Not enough AKA sent to set claim, check cost");
     });
 
   });
