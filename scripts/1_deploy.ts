@@ -1,6 +1,5 @@
 import { ethers } from "hardhat";
-import CollectionConfig from "../config/CollectionConfig";
-import { NftContractType } from "../lib/NftContractProvider";
+import { AkromaClaimsRegistry } from "../typechain";
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -14,7 +13,7 @@ async function main() {
 
   // We get the contract to deploy
   const Contract = await ethers.getContractFactory("AkromaDIDRegistry");
-  const contract = (await Contract.deploy()) as NftContractType;
+  const contract = (await Contract.deploy()) as AkromaClaimsRegistry;
 
   await contract.deployed();
 

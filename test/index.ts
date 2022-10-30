@@ -1,58 +1,69 @@
 import chai, { expect } from "chai";
 import ChaiAsPromised from "chai-as-promised";
-import { BigNumber, utils } from "ethers";
 import { ethers } from "hardhat";
-import { MerkleTree } from "merkletreejs";
 import keccak256 from "keccak256";
-import CollectionConfig from "../config/CollectionConfig";
-import ContractArguments from "../config/ContractArguments";
-import { NftContractType } from "../lib/NftContractProvider";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { AkromaClaimsRegistry } from "../typechain";
 
 chai.use(ChaiAsPromised);
 
-describe(CollectionConfig.contractName, function () {
+describe("Akroma Claims Registry", function () {
   let owner!: SignerWithAddress;
-  let whitelistedUser!: SignerWithAddress;
-  let holder!: SignerWithAddress;
+  let user!: SignerWithAddress;
+  let server!: SignerWithAddress;
   let externalUser!: SignerWithAddress;
-  let contract!: NftContractType;
+  let contract!: AkromaClaimsRegistry;
+  let noAddress = "0x0000000000000000000000000000000000000000000000000000000000000000";
+  let testKey = "username";
+  let testValue = "detroitpro";
 
   before(async function () {
-    [owner, whitelistedUser, holder, externalUser] = await ethers.getSigners();
+    [owner, user, server, externalUser] = await ethers.getSigners();
   });
 
-  it("Contract deployment", async function () {
-    const Contract = await ethers.getContractFactory(
-      CollectionConfig.contractName
-    );
-    contract = (await Contract.deploy(...ContractArguments)) as NftContractType;
+  describe("deployment", async () => {
 
-    await contract.deployed();
+    it("should deploy without exceptions", async () => {
+      const Contract = await ethers.getContractFactory("AkromaClaimsRegistry");
+      contract = (await Contract.deploy()) as AkromaClaimsRegistry;
+
+      await contract.deployed();
+    })
+
   });
 
-  it("Token URI generation", async function () {
-    // const uriPrefix = "ipfs://__COLLECTION_CID__/";
-    // const uriSuffix = ".json";
-    // const totalSupply = await contract.totalSupply();
+  describe("default state after deployment", async () => {
 
-    // expect(await contract.tokenURI(1)).to.equal(
-    //   CollectionConfig.hiddenMetadataUri
-    // );
+    it("registry should be empty", async function () {
+      expect(await contract.getClaim(server.address, server.address, keccak256("test"))).to.equal(noAddress);
+    });
 
-    // // Reveal collection
-    // await contract.setUriPrefix(uriPrefix);
-    // await contract.setRevealed(true);
-
-    // // ERC721A uses token IDs starting from 0 internally...
-    // await expect(contract.tokenURI(0)).to.be.revertedWith(
-    //   "ERC721Metadata: URI query for nonexistent token"
-    // );
-
-    // // Testing first and last minted tokens
-    // expect(await contract.tokenURI(1)).to.equal(`${uriPrefix}1${uriSuffix}`);
-    // expect(await contract.tokenURI(totalSupply)).to.equal(
-    //   `${uriPrefix}${totalSupply}${uriSuffix}`
-    // );
   });
+
+  describe("user using registry", async () => {
+
+    it("should allow any user to store a claim", async function () {
+      const subject = user.address;
+      const key = ethers.utils.formatBytes32String(testKey);
+      const value = ethers.utils.formatBytes32String(testValue);
+      await contract.setClaim(subject, key, value);
+    });
+
+    it("should be able to look up values based on issuer, subject and key", async function () {
+      const issuer = owner.address;
+      const subject = user.address;
+      const key = ethers.utils.formatBytes32String(testKey);
+
+      // const claim = await contract.getClaim(issuer, subject, key);
+      let claim = await contract.registry(issuer, subject, key);
+      expect(claim).to.equal(ethers.utils.formatBytes32String(testValue));
+
+
+      // decode the claim
+      const decoded = ethers.utils.parseBytes32String(claim);
+      expect(decoded).to.equal(testValue);
+    });
+
+  });
+
 });
