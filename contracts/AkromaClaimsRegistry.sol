@@ -2,9 +2,11 @@
 
 pragma solidity ^0.8.6;
 
+import '@openzeppelin/contracts/access/Ownable.sol';
+
 /// @title Claims Registry - A repository storing claims issued
 ///        from any account to any other account.
-contract AkromaClaimsRegistry {
+contract AkromaClaimsRegistry is Ownable {
 
     mapping(address => mapping(address => mapping(bytes32 => bytes32))) public registry;
 
