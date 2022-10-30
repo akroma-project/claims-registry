@@ -27,7 +27,7 @@ contract AkromaClaimsRegistry {
     /// @param value The data associated with the claim
     function setClaim(address subject, bytes32 key, bytes32 value) public {
         registry[msg.sender][subject][key] = value;
-        ClaimSet(msg.sender, subject, key, value, now);
+        emit ClaimSet(msg.sender, subject, key, value, block.timestamp);
     }
 
     /// @dev Create or update a claim about yourself
@@ -41,7 +41,7 @@ contract AkromaClaimsRegistry {
     /// @param issuer The address of the issuer of the claim
     /// @param subject The address to which the claim was issued to
     /// @param key The key used to identify the claim
-    function getClaim(address issuer, address subject, bytes32 key) public constant returns(bytes32) {
+    function getClaim(address issuer, address subject, bytes32 key) public view returns(bytes32) {
         return registry[issuer][subject][key];
     }
 
@@ -54,6 +54,6 @@ contract AkromaClaimsRegistry {
         require(msg.sender == issuer || msg.sender == subject);
         require(registry[issuer][subject][key] != 0);
         delete registry[issuer][subject][key];
-        ClaimRemoved(msg.sender, subject, key, now);
+        emit ClaimRemoved(msg.sender, subject, key, block.timestamp);
     }
 }
