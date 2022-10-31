@@ -2,58 +2,23 @@
 
 pragma solidity ^0.8.6;
 
-/// @title Claims Registry - A repository storing claims issued
-///        from any account to any other account.
-contract AkromaClaimsRegistry {
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./BaseClaimsRegistry.sol";
 
-    mapping(address => mapping(address => mapping(bytes32 => bytes32))) public registry;
+contract AkromaClaimsRegistry is BaseClaimsRegistry, Ownable {
+  bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    event ClaimSet(
-        address indexed issuer,
-        address indexed subject,
-        bytes32 indexed key,
-        bytes32 value,
-        uint updatedAt);
+  constructor(
+    string memory _name,
+    string memory _url,
+    uint256 _cost
+  ) BaseClaimsRegistry(_name, _url, _cost) {
+    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    _setupRole(ADMIN_ROLE, msg.sender);
+  }
 
-    event ClaimRemoved(
-        address indexed issuer,
-        address indexed subject,
-        bytes32 indexed key,
-        uint removedAt);
-
-    /// @dev Create or update a claim
-    /// @param subject The address the claim is being issued to
-    /// @param key The key used to identify the claim
-    /// @param value The data associated with the claim
-    function setClaim(address subject, bytes32 key, bytes32 value) public {
-        registry[msg.sender][subject][key] = value;
-        emit ClaimSet(msg.sender, subject, key, value, block.timestamp);
-    }
-
-    /// @dev Create or update a claim about yourself
-    /// @param key The key used to identify the claim
-    /// @param value The data associated with the claim
-    function setSelfClaim(bytes32 key, bytes32 value) public {
-        setClaim(msg.sender, key, value);
-    }
-
-    /// @dev Allows to retrieve claims from other contracts as well as other off-chain interfaces
-    /// @param issuer The address of the issuer of the claim
-    /// @param subject The address to which the claim was issued to
-    /// @param key The key used to identify the claim
-    function getClaim(address issuer, address subject, bytes32 key) public view returns(bytes32) {
-        return registry[issuer][subject][key];
-    }
-
-    /// @dev Allows to remove a claims from the registry.
-    ///      This can only be done by the issuer or the subject of the claim.
-    /// @param issuer The address of the issuer of the claim
-    /// @param subject The address to which the claim was issued to
-    /// @param key The key used to identify the claim
-    function removeClaim(address issuer, address subject, bytes32 key) public {
-        require(msg.sender == issuer || msg.sender == subject);
-        require(registry[issuer][subject][key] != 0);
-        delete registry[issuer][subject][key];
-        emit ClaimRemoved(msg.sender, subject, key, block.timestamp);
-    }
+  function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl) returns (bool) {
+    return interfaceId == type(IBaseClaimsRegistry).interfaceId || interfaceId == type(AccessControl).interfaceId || super.supportsInterface(interfaceId);
+  }
 }
