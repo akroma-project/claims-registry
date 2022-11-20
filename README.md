@@ -30,4 +30,7 @@ The current version of the registry is focused on offering first party claims. T
 
 # Deploying
 
-`yarn deploy --network testnet`
+1. copy `.env.example` to `.env`
+2. update the values in `.env`
+3. `yarn compile`
+4. `yarn deploy --network testnet`

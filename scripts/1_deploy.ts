@@ -12,15 +12,12 @@ async function main() {
   console.log("Deploying contract...");
 
   // We get the contract to deploy
-  const Contract = await ethers.getContractFactory("AkromaDIDRegistry");
-  const contract = (await Contract.deploy()) as AkromaClaimsRegistry;
+  const Contract = await ethers.getContractFactory("AkromaClaimsRegistry");
+  const contract = (await Contract.deploy('CHANGE_ME', 'https://CHANGE_ME/claims', 2.0)) as AkromaClaimsRegistry;
 
   await contract.deployed();
 
-  // console.debug(`Contract config: ${JSON.stringify(CollectionConfig)}`);
-
   console.log("Contract deployed to:", contract.address);
-  
 }
 
 // We recommend this pattern to be able to use async/await everywhere
