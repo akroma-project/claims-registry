@@ -25,4 +25,5 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run tests
+        run: yarn compile
         run: yarn test-extended
