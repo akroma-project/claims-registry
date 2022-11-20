@@ -1,10 +1,8 @@
-name: Hardhat tests
+name: Pull Request Tests
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
+    branches: [ main ]
 
 jobs:
   tests:
@@ -24,6 +22,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run tests
+      - name: Compile
         run: yarn compile
+      - name: Run tests
         run: yarn test-extended
