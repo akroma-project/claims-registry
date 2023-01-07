@@ -3,23 +3,23 @@
 pragma solidity ^0.8.6;
 
 interface IBaseClaimsRegistry {
-  event ClaimSet(address indexed issuer, address indexed subject, bytes32 indexed key, bytes32 value, uint256 updatedAt);
+  event ClaimSet(address indexed issuer, address indexed subject, bytes32 indexed key, string value, uint256 updatedAt);
 
   event ClaimRemoved(address indexed issuer, address indexed subject, bytes32 indexed key, uint256 removedAt);
 
   function setClaim(
     address subject,
     bytes32 key,
-    bytes32 value
+    string memory value
   ) external payable;
 
-  function setSelfClaim(bytes32 key, bytes32 value) external payable;
+  function setSelfClaim(bytes32 key, string memory value) external payable;
 
   function getClaim(
     address issuer,
     address subject,
     bytes32 key
-  ) external view returns (bytes32);
+  ) external view returns (string memory);
 
   function removeClaim(
     address issuer,

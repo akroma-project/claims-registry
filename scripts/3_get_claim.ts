@@ -1,5 +1,5 @@
-import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
+import keccak256 from "keccak256";
 import { AkromaClaimsRegistry } from "../typechain";
 
 async function main() {
@@ -10,15 +10,18 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
-  console.log("Deploying contract...");
-
+  console.log("Getting claim...");
+  const key = keccak256('profile');
   // We get the contract to deploy
-  const Contract = await ethers.getContractFactory("AkromaClaimsRegistry");
-  const contract = (await Contract.deploy('quotient', 'https://qdm/claims', BigNumber.from("10000000000000000"))) as AkromaClaimsRegistry;
-
-  await contract.deployed();
-
-  console.log("Contract deployed to:", contract.address);
+  const contract = await ethers.getContractAt("AkromaClaimsRegistry", "0xB557A2968776123eb2DC402eb5D5E123c2d6c7E0") as AkromaClaimsRegistry;
+  const name = await contract.name();
+  const claim = await contract.getClaim(
+    '0x17218eDBBa1cEc8623D7c82ab995B0B759aB9FF6',
+    '0x17218eDBBa1cEc8623D7c82ab995B0B759aB9FF6',
+    key,
+  );
+  console.log("Claim:", claim);
+  console.log("Contract name:", name);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

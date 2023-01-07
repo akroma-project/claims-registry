@@ -14,7 +14,7 @@ abstract contract BaseClaimsRegistry is IBaseClaimsRegistry, AccessControl {
   string private _name;
   string private _url;
 
-  mapping(address => mapping(address => mapping(bytes32 => bytes32))) public registry;
+  mapping(address => mapping(address => mapping(bytes32 => string))) public registry;
 
   constructor(
     string memory name_,
@@ -67,8 +67,10 @@ abstract contract BaseClaimsRegistry is IBaseClaimsRegistry, AccessControl {
   function setClaim(
     address subject,
     bytes32 key,
-    bytes32 value
+    string memory value
   ) public payable virtual priceCompliance notPaused {
+    require(bytes(value).length  != 0, "Claim value cannot be empty");
+    require(bytes(value).length  <= 1000, "Claim value cannot be longer than 1000 characters");
     registry[msg.sender][subject][key] = value;
     emit ClaimSet(msg.sender, subject, key, value, block.timestamp);
   }
@@ -76,7 +78,7 @@ abstract contract BaseClaimsRegistry is IBaseClaimsRegistry, AccessControl {
   /// @dev Create or update a claim about yourself
   /// @param key The key used to identify the claim
   /// @param value The data associated with the claim
-  function setSelfClaim(bytes32 key, bytes32 value) public payable virtual {
+  function setSelfClaim(bytes32 key, string memory value) public payable virtual {
     setClaim(msg.sender, key, value);
   }
 
@@ -88,7 +90,7 @@ abstract contract BaseClaimsRegistry is IBaseClaimsRegistry, AccessControl {
     address issuer,
     address subject,
     bytes32 key
-  ) public view returns (bytes32) {
+  ) public view returns (string memory) {
     return registry[issuer][subject][key];
   }
 
@@ -103,7 +105,7 @@ abstract contract BaseClaimsRegistry is IBaseClaimsRegistry, AccessControl {
     bytes32 key
   ) public payable virtual {
     require(msg.sender == issuer || msg.sender == subject);
-    require(registry[issuer][subject][key] != 0);
+    require(bytes(registry[issuer][subject][key]).length  != 0, "Claim does not exist");
     delete registry[issuer][subject][key];
     emit ClaimRemoved(msg.sender, subject, key, block.timestamp);
   }
