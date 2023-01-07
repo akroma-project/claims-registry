@@ -12,7 +12,6 @@ describe("Akroma Claims Registry", function () {
   let user!: SignerWithAddress;
   let server!: SignerWithAddress;
   let contract!: AkromaClaimsRegistry;
-  let noAddress = "0x0000000000000000000000000000000000000000000000000000000000000000";
   let testKey = "username";
   let testValue = "detroitpro";
   const pausedMessage = "Paused: the contract is paused, no claims can be set";
@@ -33,7 +32,7 @@ describe("Akroma Claims Registry", function () {
 
       expect(await contract.name()).to.equal('unit-test');
       expect(await contract.url()).to.equal('url');
-      expect(await contract.id()).to.equal('0x8381cc8a');
+      expect(await contract.id()).to.equal('0xa550e5a5'); // updated contract id with new methods.
       expect(await contract.cost()).to.equal(2.0);
     })
 
@@ -42,7 +41,7 @@ describe("Akroma Claims Registry", function () {
   describe("default state after deployment", async () => {
 
     it("registry should be empty", async function () {
-      expect(await contract.getClaim(server.address, server.address, keccak256("test"))).to.equal(noAddress);
+      expect(await contract.getClaim(server.address, server.address, keccak256("test"))).to.equal('');
     });
 
   });
@@ -53,7 +52,7 @@ describe("Akroma Claims Registry", function () {
       const subject = user.address;
       const key = keccak256(testKey);
       const value = ethers.utils.formatBytes32String(testValue);
-
+      console.debug(`Subject: ${subject} Key: ${testKey} Value: ${value}`);
       await contract.connect(owner).setClaim(subject, key, value, { value: 2 });
     });
 
@@ -61,13 +60,29 @@ describe("Akroma Claims Registry", function () {
       const issuer = owner.address;
       const subject = user.address;
       const key = keccak256(testKey)
-
-      // const claim = await contract.getClaim(issuer, subject, key);
-      let claim = await contract.registry(issuer, subject, key);
-      expect(claim).to.equal(ethers.utils.formatBytes32String(testValue));
+      console.debug(`Issuer: ${issuer} Subject: ${subject} Key: ${testKey}`);
+      const claim = await contract.getClaim(issuer, subject, key);
+      // let claim = await contract.registry(issuer, subject, key);
+      
+      const encoded = ethers.utils.formatBytes32String(testValue);
+      console.debug(`Claim: ${claim} testValue: ${testValue} encoded: ${encoded}`);
+      expect(claim).to.equal(encoded);
 
 
       // decode the claim
+      const decoded = ethers.utils.parseBytes32String(claim);
+      expect(decoded).to.equal(testValue);
+    });
+
+    it("not require encoding string", async function () {
+      const issuer = owner.address;
+      const subject = user.address;
+      const key = keccak256(testKey);
+      const value = ethers.utils.formatBytes32String(testValue);
+      console.debug(`Subject: ${subject} Key: ${testKey} Value: ${value}`);
+      await contract.connect(owner).setClaim(subject, key, value, { value: 2 });
+
+      const claim = await contract.getClaim(issuer, subject, key);
       const decoded = ethers.utils.parseBytes32String(claim);
       expect(decoded).to.equal(testValue);
     });
