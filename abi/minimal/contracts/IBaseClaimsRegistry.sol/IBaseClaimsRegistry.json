@@ -1,0 +1,13 @@
+[
+  "event ClaimRemoved(address indexed,address indexed,bytes32 indexed,uint256)",
+  "event ClaimSet(address indexed,address indexed,bytes32 indexed,string,uint256)",
+  "function getClaim(address,address,bytes32) view returns (string)",
+  "function id() view returns (bytes4)",
+  "function name() view returns (string)",
+  "function removeClaim(address,address,bytes32) payable",
+  "function setClaim(address,bytes32,string) payable",
+  "function setCost(uint256)",
+  "function setPaused(bool)",
+  "function setSelfClaim(bytes32,string) payable",
+  "function url() view returns (string)"
+]
