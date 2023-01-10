@@ -89,6 +89,30 @@ describe("Akroma Claims Registry", function () {
 
   });
 
+
+  describe("updating a claim", async () => {
+
+    it("should allow user to update a claim", async function () {
+      const issuer = owner.address;
+      const subject = user.address;
+      const key = keccak256("update-test");
+      const value1 = "value-one";
+      const value2 = "value-two";
+      
+      // Set and get the first value
+      await contract.connect(owner).setClaim(subject, key, value1, { value: 2 });
+      const claim1 = await contract.getClaim(issuer, subject, key);
+      expect(value1).to.equal(claim1);
+
+      // Set and get the second value
+      await contract.connect(owner).setClaim(subject, key, value2, { value: 2 });
+      const claim2 = await contract.getClaim(issuer, subject, key);
+      expect(value2).to.equal(claim2);
+    });
+
+
+  });
+
   describe("when someone tries to use registry with invalid params", async () => {
 
     it("should now allow any user to store a claim without paying AKA", async function () {
